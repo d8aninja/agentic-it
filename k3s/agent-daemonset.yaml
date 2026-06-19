@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: agentic-it-agent
+  namespace: agentic-it
+  labels:
+    app: agentic-it-agent
+spec:
+  selector:
+    matchLabels:
+      app: agentic-it-agent
+  template:
+    metadata:
+      labels:
+        app: agentic-it-agent
+    spec:
+      hostNetwork: true        # needs host network to remediate real adapters
+      tolerations:
+        - operator: Exists     # run on every node including control-plane
+      containers:
+        - name: agent
+          image: agentic-it-agent:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: agentic-it-config
+            - secretRef:
+                name: agentic-it-secret
+          env:
+            - name: OLLAMA_BASE_URL
+              value: "http://localhost:11434"
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+          securityContext:
+            privileged: true   # required for adapter up/down on Linux
+          stdin: true
+          tty: true
+      volumes:
+        - name: logs
+          hostPath:
+            path: /var/log/agentic-it
+            type: DirectoryOrCreate

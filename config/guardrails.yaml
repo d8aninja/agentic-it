@@ -1,0 +1,6 @@
+# Only these actions may ever be executed, regardless of what the LLM
+# recommends. This list should only grow deliberately, not automatically.
+allowed_actions:
+  - reconnect_known_network
+  - restart_adapter
+  - forget_and_rejoin
